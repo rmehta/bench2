@@ -11,7 +11,7 @@ apps:
     branch: version-15
   - name: payments
     repo: https://github.com/frappe/payments
-    branch: main
+    branch: version-15
 
 sites:
   - name: site1.localhost

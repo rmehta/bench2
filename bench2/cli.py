@@ -80,6 +80,33 @@ def stop(context: click.Context) -> None:
         sys.exit(1)
 
 
+@cli.command("start-admin")
+@click.option("--port", default=8002, type=int, help="Port for the admin interface.")
+@click.pass_context
+def start_admin(context: click.Context, port: int) -> None:
+    """Start the admin UI as a background daemon."""
+    try:
+        from bench2.commands.start_admin import StartAdminCommand
+        bench = _load_bench()
+        StartAdminCommand(bench, port=port).run()
+    except Bench2Error as error:
+        click.echo(str(error), err=True)
+        sys.exit(1)
+
+
+@cli.command("stop-admin")
+@click.pass_context
+def stop_admin(context: click.Context) -> None:
+    """Stop the background admin UI."""
+    try:
+        from bench2.commands.stop_admin import StopAdminCommand
+        bench = _load_bench()
+        StopAdminCommand(bench).run()
+    except Bench2Error as error:
+        click.echo(str(error), err=True)
+        sys.exit(1)
+
+
 @cli.command()
 @click.pass_context
 def build(context: click.Context) -> None:
