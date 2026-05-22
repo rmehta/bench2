@@ -4,9 +4,9 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bench2.config.bench_config import BenchConfig
-from bench2.core.bench import Bench
-from bench2.managers.nginx_manager import NginxManager
+from bench_cli.config.bench_config import BenchConfig
+from bench_cli.core.bench import Bench
+from bench_cli.managers.nginx_manager import NginxManager
 
 
 _BASE_YAML = """\

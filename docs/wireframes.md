@@ -10,7 +10,7 @@ Every page extends this shell:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -18,7 +18,7 @@ Every page extends this shell:
   [ page content ]
 
 ──────────────────────────────────────────────────────────────────────────
-bench2 · reads filesystem on every request · no state stored
+bench · reads filesystem on every request · no state stored
 ```
 
 Nav items are plain links. The bench name is shown in the header. The green "running" badge is derived from `ProcessReader.read_all()` — amber if any process is stopped, red if all are down.
@@ -29,7 +29,7 @@ Nav items are plain links. The bench name is shown in the header. The green "run
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -76,7 +76,7 @@ Status colour convention used throughout:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│ [Apps]   │  Sites   │ Processes│   Logs   │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -109,7 +109,7 @@ Each app section shows the full commit message and flags dirty working trees. Th
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │ [Sites]  │ Processes│   Logs   │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -131,7 +131,7 @@ Each app section shows the full commit message and flags dirty working trees. Th
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │ [Sites]  │ Processes│   Logs   │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -179,7 +179,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │ [Database] Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -205,7 +205,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │ [Database] Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -234,7 +234,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │ [Database] Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -267,7 +267,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │[Processes]│   Logs  │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -299,7 +299,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│  [Logs]  │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -324,7 +324,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│  [Logs]  │  Database  Tasks │
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -365,7 +365,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │  Database [Tasks]│
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘
@@ -390,7 +390,7 @@ Action buttons submit to `POST /tasks/run`. "Run migrate" passes `command=migrat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  bench2 admin          my-bench                              ⬡ running  │
+│  bench admin          my-bench                              ⬡ running  │
 ├──────────┬──────────┬──────────┬──────────┬──────────┬──────────────────┤
 │ Dashboard│   Apps   │  Sites   │ Processes│   Logs   │  Database [Tasks]│
 └──────────┴──────────┴──────────┴──────────┴──────────┴──────────────────┘

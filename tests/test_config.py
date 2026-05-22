@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bench2.config.bench_config import BenchConfig
-from bench2.exceptions import ConfigError
+from bench_cli.config.bench_config import BenchConfig
+from bench_cli.exceptions import ConfigError
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

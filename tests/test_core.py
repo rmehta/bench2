@@ -3,17 +3,17 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from bench2.config.app_config import AppConfig
-from bench2.config.bench_config import BenchConfig
-from bench2.config.mariadb_config import MariaDBConfig
-from bench2.config.redis_config import RedisConfig
-from bench2.config.site_config import SiteConfig
-from bench2.config.worker_config import WorkerConfig
-from bench2.core.app import App
-from bench2.core.bench import Bench
-from bench2.core.site import Site
-from bench2.managers.honcho_process_manager import HonchoProcessManager
-from bench2.managers.supervisor_process_manager import SupervisorProcessManager
+from bench_cli.config.app_config import AppConfig
+from bench_cli.config.bench_config import BenchConfig
+from bench_cli.config.mariadb_config import MariaDBConfig
+from bench_cli.config.redis_config import RedisConfig
+from bench_cli.config.site_config import SiteConfig
+from bench_cli.config.worker_config import WorkerConfig
+from bench_cli.core.app import App
+from bench_cli.core.bench import Bench
+from bench_cli.core.site import Site
+from bench_cli.managers.honcho_process_manager import HonchoProcessManager
+from bench_cli.managers.supervisor_process_manager import SupervisorProcessManager
 
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"

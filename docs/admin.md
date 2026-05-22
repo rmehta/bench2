@@ -1,6 +1,6 @@
 # Admin Interface Specification
 
-bench2 ships a lightweight web-based admin interface built on Flask with no Python dependencies beyond Flask itself. It is started as a background daemon with `bench2 start-admin` and intended for local inspection and day-to-day operations.
+bench ships a lightweight web-based admin interface built on Flask with no Python dependencies beyond Flask itself. It is started as a background daemon with `bench start-admin` and intended for local inspection and day-to-day operations.
 
 ---
 
@@ -16,9 +16,9 @@ bench2 ships a lightweight web-based admin interface built on Flask with no Pyth
 ## Starting the admin
 
 ```bash
-bench2 start-admin              # start daemon on default port 8002
-bench2 start-admin --port 9000  # custom port
-bench2 stop-admin               # stop the daemon
+bench start-admin              # start daemon on default port 8002
+bench start-admin --port 9000  # custom port
+bench stop-admin               # stop the daemon
 ```
 
 The daemon auto-stops after **15 minutes of inactivity** — a background watchdog thread fires `SIGTERM` if no HTTP request arrives within the timeout window. State is tracked in `pids/admin.pid` and `pids/admin.port`.
@@ -26,9 +26,9 @@ The daemon auto-stops after **15 minutes of inactivity** — a background watchd
 For interactive foreground use during development:
 
 ```bash
-bench2 admin               # start on default port 8001, Ctrl-C to stop
-bench2 admin --port 9000   # custom port
-bench2 admin --host 0.0.0.0  # expose to the network (your responsibility)
+bench admin               # start on default port 8001, Ctrl-C to stop
+bench admin --port 9000   # custom port
+bench admin --host 0.0.0.0  # expose to the network (your responsibility)
 ```
 
 ---
@@ -36,8 +36,8 @@ bench2 admin --host 0.0.0.0  # expose to the network (your responsibility)
 ## Package layout
 
 ```
-bench2/
-└── bench2/
+bench_cli/
+└── bench_cli/
     └── admin/
         ├── __init__.py
         ├── app.py                   # Flask app factory — create_app(bench_root: Path)
@@ -424,10 +424,10 @@ Views catch `ConfigError`, `FileNotFoundError`, and database connection errors a
 
 ## CLI commands
 
-Three commands in `bench2/cli.py`:
+Three commands in `bench_cli/cli.py`:
 
-- **`bench2 start-admin [--port 8002]`** — spawns `bench2.admin.server` as a detached subprocess, writes `pids/admin.pid` and `pids/admin.port`, prints the URL.
-- **`bench2 stop-admin`** — sends `SIGTERM` to the PID in `pids/admin.pid`, cleans up state files.
-- **`bench2 admin [--port 8001] [--host 127.0.0.1]`** — foreground mode, blocks until `Ctrl-C`.
+- **`bench start-admin [--port 8002]`** — spawns `bench_cli.admin.server` as a detached subprocess, writes `pids/admin.pid` and `pids/admin.port`, prints the URL.
+- **`bench stop-admin`** — sends `SIGTERM` to the PID in `pids/admin.pid`, cleans up state files.
+- **`bench admin [--port 8001] [--host 127.0.0.1]`** — foreground mode, blocks until `Ctrl-C`.
 
-The daemon entry point (`bench2/admin/server.py`) runs `create_app()`, registers a `@app.before_request` hook that updates a module-level timestamp, starts a daemon watchdog thread that polls every 60 seconds, and calls `app.run()`.
+The daemon entry point (`bench_cli/admin/server.py`) runs `create_app()`, registers a `@app.before_request` hook that updates a module-level timestamp, starts a daemon watchdog thread that polls every 60 seconds, and calls `app.run()`.

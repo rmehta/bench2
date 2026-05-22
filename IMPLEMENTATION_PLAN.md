@@ -1,4 +1,4 @@
-# bench2 — Implementation Plan
+# bench — Implementation Plan
 
 ## Why This Order
 
@@ -16,20 +16,20 @@ The order also respects risk: the two hardest pieces (subprocess management in P
 
 | File | Purpose |
 |------|---------|
-| `pyproject.toml` | Package metadata, dependencies (`click`, `pyyaml`, `pymysql`, `honcho`, `supervisor`, `flask`), entry point `bench = "bench2.cli:cli"` |
-| `bench2/__init__.py` | Package marker, `__version__` |
-| `bench2/exceptions.py` | `ConfigError`, `BenchError`, `CommandError`, `TaskNotFoundError`, `TaskNotRunningError` — all subclass `Bench2Error` |
-| `bench2/platform.py` | `Platform` enum, `detect()`, `is_macos()`, `is_linux()`, `SystemPackageManager` ABC, `AptPackageManager`, `BrewPackageManager`, `get_package_manager()` factory |
-| `bench2/cli.py` | Click group with stub commands: `new`, `init`, `run`, `build`, `update`, `admin`, and `setup` sub-group with `nginx`, `letsencrypt`, `production` |
-| `bench2/config/__init__.py` | Empty |
-| `bench2/core/__init__.py` | Empty |
-| `bench2/managers/__init__.py` | Empty |
-| `bench2/commands/__init__.py` | Empty |
-| `bench2/commands/setup/__init__.py` | Empty |
-| `bench2/tasks/__init__.py` | Empty |
-| `bench2/admin/__init__.py` | Empty |
-| `bench2/admin/readers/__init__.py` | Empty |
-| `bench2/admin/views/__init__.py` | Empty |
+| `pyproject.toml` | Package metadata, dependencies (`click`, `pyyaml`, `pymysql`, `honcho`, `supervisor`, `flask`), entry point `bench = "bench_cli.cli:cli"` |
+| __cli/__init__.py` | Package marker, `__version__` |
+| __cli/exceptions.py` | `ConfigError`, `BenchError`, `CommandError`, `TaskNotFoundError`, `TaskNotRunningError` — all subclass `BenchError` |
+| __cli/platform.py` | `Platform` enum, `detect()`, `is_macos()`, `is_linux()`, `SystemPackageManager` ABC, `AptPackageManager`, `BrewPackageManager`, `get_package_manager()` factory |
+| `bench_cli/cli.py` | Click group with stub commands: `new`, `init`, `run`, `build`, `update`, `admin`, and `setup` sub-group with `nginx`, `letsencrypt`, `production` |
+| __cli/config/__init__.py` | Empty |
+| __cli/core/__init__.py` | Empty |
+| __cli/managers/__init__.py` | Empty |
+| __cli/commands/__init__.py` | Empty |
+| __cli/commands/setup/__init__.py` | Empty |
+| __cli/tasks/__init__.py` | Empty |
+| __cli/admin/__init__.py` | Empty |
+| __cli/admin/readers/__init__.py` | Empty |
+| __cli/admin/views/__init__.py` | Empty |
 
 ### Checkpoint
 ```bash
@@ -48,15 +48,15 @@ bench new --help      # works
 
 | File | Purpose |
 |------|---------|
-| `bench2/config/app_config.py` | `AppConfig` dataclass: `name`, `repo`, `branch` |
-| `bench2/config/site_config.py` | `SiteConfig` dataclass: `name`, `db_name`, `db_password`, `apps`, `domains`, `ssl`; `all_domains` property |
-| `bench2/config/mariadb_config.py` | `MariaDBConfig` dataclass with defaults; optional `version` field |
-| `bench2/config/redis_config.py` | `RedisConfig` dataclass with defaults; optional `version` field |
-| `bench2/config/worker_config.py` | `WorkerConfig` dataclass with defaults |
-| `bench2/config/nginx_config.py` | `NginxConfig` dataclass with defaults |
-| `bench2/config/letsencrypt_config.py` | `LetsEncryptConfig` dataclass with defaults |
-| `bench2/config/bench_config.py` | `BenchConfig` — `from_file()` classmethod, `validate()` with all 14 rules, `app_by_name()`, `framework_app` |
-| `bench2/commands/new.py` | `NewCommand.run()` — writes starter `bench.yml` template |
+| `bench_cli/config/app_config.py` | `AppConfig` dataclass: `name`, `repo`, `branch` |
+| `bench_cli/config/site_config.py` | `SiteConfig` dataclass: `name`, `db_name`, `db_password`, `apps`, `domains`, `ssl`; `all_domains` property |
+| `bench_cli/config/mariadb_config.py` | `MariaDBConfig` dataclass with defaults; optional `version` field |
+| `bench_cli/config/redis_config.py` | `RedisConfig` dataclass with defaults; optional `version` field |
+| `bench_cli/config/worker_config.py` | `WorkerConfig` dataclass with defaults |
+| `bench_cli/config/nginx_config.py` | `NginxConfig` dataclass with defaults |
+| `bench_cli/config/letsencrypt_config.py` | `LetsEncryptConfig` dataclass with defaults |
+| `bench_cli/config/bench_config.py` | `BenchConfig` — `from_file()` classmethod, `validate()` with all 14 rules, `app_by_name()`, `framework_app` |
+| `bench_cli/commands/new.py` | `NewCommand.run()` — writes starter `bench.yml` template |
 | `tests/__init__.py` | Empty |
 | `tests/test_config.py` | Unit tests: happy path, each of the 14 validation rules |
 | `tests/fixtures/minimal.yml` | Minimal valid `bench.yml` |
@@ -78,28 +78,28 @@ bench new    # writes bench.yml
 - `MariaDBManager._connect()` requires live MariaDB — these tests must be integration tests run manually, not in CI.
 - `Site.create()` calls the Frappe `bench` CLI, which requires the virtualenv to be fully set up first. The steps inside `InitCommand.run()` are strictly ordered and cannot be parallelised.
 - `PythonEnvManager.ensure_python()` may need to add the deadsnakes PPA (Ubuntu) or run `brew install python@X` (macOS) — must be idempotent on both platforms.
-- On macOS, `MariaDBManager.start()` uses `brew services start mariadb` — this requires the Homebrew services daemon to be running (`brew services list` should work). On Ubuntu it uses `systemctl`. All platform branching goes through `bench2.platform`.
+- On macOS, `MariaDBManager.start()` uses `brew services start mariadb` — this requires the Homebrew services daemon to be running (`brew services list` should work). On Ubuntu it uses `systemctl`. All platform branching goes through `bench_cli.platform`.
 
 ### Files
 
 | File | Purpose |
 |------|---------|
-| `bench2/utils.py` | `run_command(argv, cwd, env, capture)` — wraps `subprocess.run`, raises `CommandError` on failure, optionally streams output |
-| `bench2/core/bench.py` | `Bench` — path properties, `create_directories()`, `apps()` and `sites()` accessors |
-| `bench2/core/app.py` | `App` — `is_cloned`, `clone()`, `install()`, `update()`, `build_assets()` |
-| `bench2/core/site.py` | `Site` — `exists`, `create()`, `install_app()`, `migrate()` |
-| `bench2/managers/python_env_manager.py` | `PythonEnvManager` — `ensure_python()` (deadsnakes on Ubuntu, `brew install python@X` on macOS), `create_venv()`, `install_app()`, `install_node()` (NodeSource on Ubuntu, `brew install node` on macOS) |
-| `bench2/managers/mariadb_manager.py` | `MariaDBManager` — `install()` picks `mariadb-server-<version>` (apt) or `mariadb@<version>` (brew); `start()` uses the versioned brew service name when a version is set; `is_installed()`, `is_running()`, `create_database()`, `create_user()`, `_connect()` |
-| `bench2/managers/redis_manager.py` | `RedisManager` — `install()` picks `redis@<version>` (brew) or `redis-server` (apt, version-agnostic); `is_installed()`, `generate_configs()` |
-| `bench2/managers/process_manager.py` | `ProcessManager` ABC, `ProcessDefinition` dataclass, `ProcessManagerFactory` |
-| `bench2/managers/honcho_process_manager.py` | `HonchoProcessManager` — `generate_config()` writes Procfile, `start()`, `stop()`, `is_running()` |
-| `bench2/managers/supervisor_process_manager.py` | `SupervisorProcessManager` — `generate_config()` writes supervisor.conf, `start()`/`stop()`/`is_running()`/`status()` |
-| `bench2/commands/init.py` | `InitCommand.run()` — orchestrates all 12 steps in order |
-| `bench2/commands/run.py` | `RunCommand.run()` — validates config, calls `pm.start()` |
-| `bench2/commands/build.py` | `BuildCommand.run()` — iterates apps, then runs `bench build --make-copy` |
-| `bench2/commands/update.py` | `UpdateCommand.run()` — warns if running, updates apps, reinstalls, migrates sites |
+| `bench_cli/utils.py` | `run_command(argv, cwd, env, capture)` — wraps `subprocess.run`, raises `CommandError` on failure, optionally streams output |
+| `bench_cli/core/bench.py` | `Bench` — path properties, `create_directories()`, `apps()` and `sites()` accessors |
+| `bench_cli/core/app.py` | `App` — `is_cloned`, `clone()`, `install()`, `update()`, `build_assets()` |
+| `bench_cli/core/site.py` | `Site` — `exists`, `create()`, `install_app()`, `migrate()` |
+| `bench_cli/managers/python_env_manager.py` | `PythonEnvManager` — `ensure_python()` (deadsnakes on Ubuntu, `brew install python@X` on macOS), `create_venv()`, `install_app()`, `install_node()` (NodeSource on Ubuntu, `brew install node` on macOS) |
+| `bench_cli/managers/mariadb_manager.py` | `MariaDBManager` — `install()` picks `mariadb-server-<version>` (apt) or `mariadb@<version>` (brew); `start()` uses the versioned brew service name when a version is set; `is_installed()`, `is_running()`, `create_database()`, `create_user()`, `_connect()` |
+| `bench_cli/managers/redis_manager.py` | `RedisManager` — `install()` picks `redis@<version>` (brew) or `redis-server` (apt, version-agnostic); `is_installed()`, `generate_configs()` |
+| `bench_cli/managers/process_manager.py` | `ProcessManager` ABC, `ProcessDefinition` dataclass, `ProcessManagerFactory` |
+| `bench_cli/managers/honcho_process_manager.py` | `HonchoProcessManager` — `generate_config()` writes Procfile, `start()`, `stop()`, `is_running()` |
+| `bench_cli/managers/supervisor_process_manager.py` | `SupervisorProcessManager` — `generate_config()` writes supervisor.conf, `start()`/`stop()`/`is_running()`/`status()` |
+| `bench_cli/commands/init.py` | `InitCommand.run()` — orchestrates all 12 steps in order |
+| `bench_cli/commands/run.py` | `RunCommand.run()` — validates config, calls `pm.start()` |
+| `bench_cli/commands/build.py` | `BuildCommand.run()` — iterates apps, then runs `bench build --make-copy` |
+| `bench_cli/commands/update.py` | `UpdateCommand.run()` — warns if running, updates apps, reinstalls, migrates sites |
 
-Wire up `cli.py` fully in this phase: find `bench.yml` (walk parent dirs), parse config, construct `Bench`, call the right command. Add `--verbose` and `--yes` options. Translate `Bench2Error` subclasses to clean exit-code-1 messages.
+Wire up `cli.py` fully in this phase: find `bench.yml` (walk parent dirs), parse config, construct `Bench`, call the right command. Add `--verbose` and `--yes` options. Translate `BenchError` subclasses to clean exit-code-1 messages.
 
 ### Checkpoint (Ubuntu VM or macOS with Homebrew)
 ```bash
@@ -117,7 +117,7 @@ On macOS, `bench init` should install MariaDB and Redis via Homebrew, start Mari
 
 ## Phase 3 — Task Execution System
 
-**Goal:** `TaskRunner.run()` forks a child, writes the task directory, returns a task ID. `TaskReader` reads it back. The wrapper runs correctly when invoked as `python -m bench2.tasks.wrapper <task-dir>`.
+**Goal:** `TaskRunner.run()` forks a child, writes the task directory, returns a task ID. `TaskReader` reads it back. The wrapper runs correctly when invoked as `python -m bench_cli.tasks.wrapper <task-dir>`.
 
 ### Risk flags
 - **`os.fork()` + detach:** The forked child must call `os.setsid()` and redirect stdin/stdout/stderr to `/dev/null`. If it does not, the Flask response will not flush until the child exits — breaking SSE. This is the most OS-specific line in the codebase; test on Linux, not macOS.
@@ -127,16 +127,16 @@ On macOS, `bench init` should install MariaDB and Redis via Homebrew, start Mari
 
 | File | Purpose |
 |------|---------|
-| `bench2/tasks/models.py` | `TaskInfo` dataclass with computed `duration_seconds` |
-| `bench2/tasks/wrapper.py` | Forked child — stdlib-only; reads `meta.json`, runs `command_argv`, writes status and updates `meta.json` on exit |
-| `bench2/tasks/task_runner.py` | `TaskRunner` — `run()`, `kill()`, `_build_argv()` whitelist, `_generate_task_id()`, fork/detach, TASK_RETENTION_LIMIT purge |
-| `bench2/tasks/task_reader.py` | `TaskReader` — `list_tasks()`, `read_task()`, `read_output()`, `stream_output()`, `_effective_status()` |
+| __cli/tasks/models.py` | `TaskInfo` dataclass with computed `duration_seconds` |
+| __cli/tasks/wrapper.py` | Forked child — stdlib-only; reads `meta.json`, runs `command_argv`, writes status and updates `meta.json` on exit |
+| __cli/tasks/task_runner.py` | `TaskRunner` — `run()`, `kill()`, `_build_argv()` whitelist, `_generate_task_id()`, fork/detach, TASK_RETENTION_LIMIT purge |
+| __cli/tasks/task_reader.py` | `TaskReader` — `list_tasks()`, `read_task()`, `read_output()`, `stream_output()`, `_effective_status()` |
 | `tests/test_tasks.py` | Unit tests: task ID format, whitelist enforcement, unknown command raises `ValueError`, `_effective_status` dead-PID logic |
 
 ### Checkpoint
 ```python
-from bench2.tasks.task_runner import TaskRunner
-from bench2.tasks.task_reader import TaskReader
+from bench_cli.tasks.task_runner import TaskRunner
+from bench_cli.tasks.task_reader import TaskReader
 runner = TaskRunner(Path('/path/to/bench'))
 task_id = runner.run('build', {})
 import time; time.sleep(3)
@@ -159,48 +159,48 @@ print(reader.read_output(task_id))
 
 | File | Purpose |
 |------|---------|
-| `bench2/admin/readers/bench_reader.py` | `BenchReader` — `config()`, `summary()` |
-| `bench2/admin/readers/app_reader.py` | `AppReader` — `read_all()`, `read_one()`; reads git state via subprocess |
-| `bench2/admin/readers/site_reader.py` | `SiteReader` — `read_all()`, `read_one()`; reads `site_config.json` |
-| `bench2/admin/readers/process_reader.py` | `ProcessReader` — supervisor: parse `supervisorctl status`; honcho: check `pids/` |
-| `bench2/admin/readers/log_reader.py` | `LogReader` — `list_logs()`, `read_tail()`, `stream_tail()`; path-traversal guard |
-| `bench2/admin/readers/database_reader.py` | `DatabaseReader` — binary logs, slow query log |
+| __cli/admin/readers/bench_reader.py` | `BenchReader` — `config()`, `summary()` |
+| __cli/admin/readers/app_reader.py` | `AppReader` — `read_all()`, `read_one()`; reads git state via subprocess |
+| __cli/admin/readers/site_reader.py` | `SiteReader` — `read_all()`, `read_one()`; reads `site_config.json` |
+| __cli/admin/readers/process_reader.py` | `ProcessReader` — supervisor: parse `supervisorctl status`; honcho: check `pids/` |
+| __cli/admin/readers/log_reader.py` | `LogReader` — `list_logs()`, `read_tail()`, `stream_tail()`; path-traversal guard |
+| __cli/admin/readers/database_reader.py` | `DatabaseReader` — binary logs, slow query log |
 
 ### App factory
 
 | File | Purpose |
 |------|---------|
-| `bench2/admin/app.py` | `create_app(bench_root)` — registers all blueprints, stores `BENCH_ROOT`, sets `threaded=True` |
+| __cli/admin/app.py` | `create_app(bench_root)` — registers all blueprints, stores `BENCH_ROOT`, sets `threaded=True` |
 
 ### Views
 
 | File | Purpose |
 |------|---------|
-| `bench2/admin/views/dashboard.py` | `GET /` |
-| `bench2/admin/views/apps.py` | `GET /apps` |
-| `bench2/admin/views/sites.py` | `GET /sites`, `GET /sites/<name>` — masks `db_password` in rendered JSON |
-| `bench2/admin/views/processes.py` | `GET /processes` |
-| `bench2/admin/views/logs.py` | `GET /logs`, `GET /logs/<filename>`, `GET /logs/<filename>/stream` (SSE) |
-| `bench2/admin/views/database.py` | `GET /database/binlogs`, `GET /database/binlogs/<log_name>`, `GET /database/slow-queries` |
-| `bench2/admin/views/tasks.py` | `GET/POST /tasks/run`, `GET /tasks`, `GET /tasks/<id>`, `GET /tasks/<id>/stream` (SSE), `POST /tasks/<id>/kill` |
+| __cli/admin/views/dashboard.py` | `GET /` |
+| __cli/admin/views/apps.py` | `GET /apps` |
+| __cli/admin/views/sites.py` | `GET /sites`, `GET /sites/<name>` — masks `db_password` in rendered JSON |
+| __cli/admin/views/processes.py` | `GET /processes` |
+| __cli/admin/views/logs.py` | `GET /logs`, `GET /logs/<filename>`, `GET /logs/<filename>/stream` (SSE) |
+| __cli/admin/views/database.py` | `GET /database/binlogs`, `GET /database/binlogs/<log_name>`, `GET /database/slow-queries` |
+| __cli/admin/views/tasks.py` | `GET/POST /tasks/run`, `GET /tasks`, `GET /tasks/<id>`, `GET /tasks/<id>/stream` (SSE), `POST /tasks/<id>/kill` |
 
 ### Templates
 
 | File | Purpose |
 |------|---------|
-| `bench2/admin/templates/base.html` | Nav bar, status badge, minimal inline CSS (no external CSS file) |
-| `bench2/admin/templates/dashboard.html` | Four tables: Bench info, Apps, Sites, Processes |
-| `bench2/admin/templates/apps.html` | Apps table + per-app detail blocks |
-| `bench2/admin/templates/sites/list.html` | Sites table |
-| `bench2/admin/templates/sites/detail.html` | Overview, installed apps, action forms, masked site_config.json |
-| `bench2/admin/templates/processes.html` | Process table with optional supervisor note |
-| `bench2/admin/templates/logs/list.html` | Log file table |
-| `bench2/admin/templates/logs/viewer.html` | `<pre>` block, lines dropdown, Live Tail button; SSE JS active only when `?stream=1` |
-| `bench2/admin/templates/database/binlogs.html` | Binary logs table |
-| `bench2/admin/templates/database/binlog_detail.html` | Events table with pagination |
-| `bench2/admin/templates/database/slow_queries.html` | Slow query rows with `<details>` for SQL (no JS needed) |
-| `bench2/admin/templates/tasks/list.html` | Tasks table with status badges and kill buttons |
-| `bench2/admin/templates/tasks/detail.html` | Task header, output `<pre>`, SSE JS, kill button hidden on `done` event |
+| __cli/admin/templates/base.html` | Nav bar, status badge, minimal inline CSS (no external CSS file) |
+| __cli/admin/templates/dashboard.html` | Four tables: Bench info, Apps, Sites, Processes |
+| __cli/admin/templates/apps.html` | Apps table + per-app detail blocks |
+| __cli/admin/templates/sites/list.html` | Sites table |
+| __cli/admin/templates/sites/detail.html` | Overview, installed apps, action forms, masked site_config.json |
+| __cli/admin/templates/processes.html` | Process table with optional supervisor note |
+| __cli/admin/templates/logs/list.html` | Log file table |
+| __cli/admin/templates/logs/viewer.html` | `<pre>` block, lines dropdown, Live Tail button; SSE JS active only when `?stream=1` |
+| __cli/admin/templates/database/binlogs.html` | Binary logs table |
+| __cli/admin/templates/database/binlog_detail.html` | Events table with pagination |
+| __cli/admin/templates/database/slow_queries.html` | Slow query rows with `<details>` for SQL (no JS needed) |
+| __cli/admin/templates/tasks/list.html` | Tasks table with status badges and kill buttons |
+| __cli/admin/templates/tasks/detail.html` | Task header, output `<pre>`, SSE JS, kill button hidden on `done` event |
 
 ### Checkpoint
 ```
@@ -229,11 +229,11 @@ bench admin
 
 | File | Purpose |
 |------|---------|
-| `bench2/managers/nginx_manager.py` | `NginxManager` — `install()` (apt/brew), `generate_config(ssl_ready)`, `install_config()` (symlink), `reload()` (`systemctl` on Ubuntu / `nginx -s reload` on macOS), `cert_exists()` |
-| `bench2/managers/letsencrypt_manager.py` | `LetsEncryptManager` — `install()` (apt/brew), `ensure_webroot()`, `obtain()`, `obtain_all()`, `renew()` |
-| `bench2/commands/setup/nginx.py` | `SetupNginxCommand.run()` |
-| `bench2/commands/setup/letsencrypt.py` | `SetupLetsEncryptCommand.run()` |
-| `bench2/commands/setup/production.py` | `SetupProductionCommand.run()` — validate, supervisor, `common_site_config.json` (dns_multitenant), nginx, letsencrypt |
+| __cli/managers/nginx_manager.py` | `NginxManager` — `install()` (apt/brew), `generate_config(ssl_ready)`, `install_config()` (symlink), `reload()` (`systemctl` on Ubuntu / `nginx -s reload` on macOS), `cert_exists()` |
+| __cli/managers/letsencrypt_manager.py` | `LetsEncryptManager` — `install()` (apt/brew), `ensure_webroot()`, `obtain()`, `obtain_all()`, `renew()` |
+| __cli/commands/setup/nginx.py` | `SetupNginxCommand.run()` |
+| __cli/commands/setup/letsencrypt.py` | `SetupLetsEncryptCommand.run()` |
+| __cli/commands/setup/production.py` | `SetupProductionCommand.run()` — validate, supervisor, `common_site_config.json` (dns_multitenant), nginx, letsencrypt |
 | `tests/test_nginx_config.py` | Unit tests: assert generated config contains `server_name`, `ssl_certificate` only when `ssl_ready=True`, correct proxy headers |
 
 ### Checkpoint (live Ubuntu server, DNS configured)
@@ -270,7 +270,7 @@ def run_command(
 Raises `CommandError(stderr, returncode)` on failure. Used by every subprocess call in the codebase — the single chokepoint.
 
 ### Platform branching rule
-All `if is_macos() / else` branches live in `bench2/platform.py` or inside the relevant manager method. No platform checks appear in `commands/`, `core/`, or `admin/`. This keeps the commands layer platform-agnostic and makes it easy to add a third platform later.
+All `if is_macos() / else` branches live in __cli/platform.py` or inside the relevant manager method. No platform checks appear in `commands/`, `core/`, or `admin/`. This keeps the commands layer platform-agnostic and makes it easy to add a third platform later.
 
 ### Test strategy
 - **Unit tests** (phases 1, 3, 5): pure Python, no filesystem, no network. Mock `subprocess.run` where needed.

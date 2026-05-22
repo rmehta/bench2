@@ -3,19 +3,19 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bench2"
+name = "bench-cli"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = ["click>=8.1", "pyyaml>=6.0", "pymysql>=1.1", "honcho>=1.1", "supervisor>=4.2", "flask>=3.0", "uv>=0.4"]
 
 [project.scripts]
-bench2 = "bench2.cli:cli"
+bench = "bench_cli.cli:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
 
 [tool.setuptools.package-data]
-bench2 = [
+bench_cli = [
   "admin/templates/**/*.html",
   "admin/templates/*.html",
   "admin/static/*.css",

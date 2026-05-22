@@ -1,6 +1,6 @@
 # bench.yml — Configuration Specification
 
-`bench.yml` is the single source of truth for a bench2 environment. It lives at the root of the bench directory.
+`bench.yml` is the single source of truth for a bench environment. It lives at the root of the bench directory.
 
 ---
 
@@ -67,7 +67,7 @@ letsencrypt:
 
 # ── Admin UI ──────────────────────────────────────────────────────────────────
 admin:
-  port: 8002     # port the admin UI listens on (bench2 start-admin)
+  port: 8002     # port the admin UI listens on (bench start-admin)
   timeout: 900   # seconds of inactivity before auto-stop (default: 15 min)
 ```
 
@@ -168,14 +168,14 @@ Omit this section entirely for development benches. The section is only read by 
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `port` | int | no | `8002` | Port the admin UI listens on when started with `bench2 start-admin`. The `--port` CLI flag overrides this. |
+| `port` | int | no | `8002` | Port the admin UI listens on when started with `bench start-admin`. The `--port` CLI flag overrides this. |
 | `timeout` | int | no | `900` | Seconds of inactivity before the admin process auto-stops. Default is 15 minutes (900 s). |
 
 ---
 
 ## Validation rules
 
-bench2 validates `bench.yml` before executing any command. Violations produce a clear error message that names the offending field.
+bench validates `bench.yml` before executing any command. Violations produce a clear error message that names the offending field.
 
 1. Required fields must be present.
 2. `bench.name` must match `^[a-zA-Z][a-zA-Z0-9_-]*$`.

@@ -30,7 +30,7 @@ jobs:
           # Switch root from unix_socket to password auth so frappe new-site can connect
           sudo mysql -e "SET PASSWORD FOR root@localhost = PASSWORD('admin'); FLUSH PRIVILEGES;"
 
-      - name: Install yarn and bench2
+      - name: Install yarn and bench
         run: |
           npm install -g yarn
           pip install -e .
@@ -40,8 +40,8 @@ jobs:
           mkdir -p /tmp/ci-bench
           cp tests/fixtures/ci_bench.yml /tmp/ci-bench/bench.yml
 
-      - name: bench2 init
-        run: bench2 init
+      - name: bench init
+        run: bench init
         working-directory: /tmp/ci-bench
         timeout-minutes: 45
 
@@ -71,10 +71,10 @@ jobs:
           $BENCH frappe --site site1.localhost clear-cache
           $BENCH frappe --site site2.localhost clear-cache
 
-      - name: bench2 update
-        run: bench2 update
+      - name: bench update
+        run: bench update
         working-directory: /tmp/ci-bench
 
-      - name: bench2 build
-        run: bench2 build
+      - name: bench build
+        run: bench build
         working-directory: /tmp/ci-bench

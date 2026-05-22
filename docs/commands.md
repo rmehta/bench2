@@ -49,7 +49,7 @@ Installs and configures the entire environment described in `bench.yml`. Safe to
 
 #### Step 2 — Install system packages
 
-`MariaDBManager.install()` and `RedisManager.install()` each check `is_installed()` first and skip if already present. The package manager is selected by `get_package_manager()` from `bench2.platform`.
+`MariaDBManager.install()` and `RedisManager.install()` each check `is_installed()` first and skip if already present. The package manager is selected by `get_package_manager()` from `bench_cli.platform`.
 
 **Ubuntu (apt):**
 - `mariadb-server`
@@ -63,7 +63,7 @@ Installs and configures the entire environment described in `bench.yml`. Safe to
 - `python@<version>` (if the requested version is not already available)
 - `git` (usually pre-installed via Xcode CLT)
 
-`libmysqlclient-dev` is **not** needed on either platform — bench2 uses `PyMySQL`, which is pure Python and requires no C extension.
+`libmysqlclient-dev` is **not** needed on either platform — bench uses `PyMySQL`, which is pure Python and requires no C extension.
 
 After installation, `MariaDBManager.start()` ensures the MariaDB service is running:
 - Ubuntu: `systemctl start mariadb`
@@ -321,17 +321,17 @@ Runs in order for each site. If migration fails on one site, print the error and
 Starts the admin web interface as a background daemon.
 
 ```bash
-bench2 start-admin              # default port 8002
-bench2 start-admin --port 9000  # custom port
+bench start-admin              # default port 8002
+bench start-admin --port 9000  # custom port
 ```
 
 **Steps:**
 1. Check `pids/admin.pid` — if the process is already alive, print its URL and exit.
-2. Spawn `bench2.admin.server` as a detached subprocess (`start_new_session=True`).
+2. Spawn `bench_cli.admin.server` as a detached subprocess (`start_new_session=True`).
 3. Write `pids/admin.pid` and `pids/admin.port`.
 4. Print the admin URL.
 
-The admin server includes a watchdog that sends `SIGTERM` to itself after **15 minutes of inactivity**. Use `bench2 stop-admin` to stop it immediately.
+The admin server includes a watchdog that sends `SIGTERM` to itself after **15 minutes of inactivity**. Use `bench stop-admin` to stop it immediately.
 
 ---
 
@@ -353,9 +353,9 @@ Handles stale PID files gracefully — if the process has already exited (e.g. a
 Starts the admin web interface in the **foreground** (development use). Press `Ctrl-C` to stop.
 
 ```bash
-bench2 admin                    # default port 8001
-bench2 admin --port 9000        # custom port
-bench2 admin --host 0.0.0.0     # expose to the network
+bench admin                    # default port 8001
+bench admin --port 9000        # custom port
+bench admin --host 0.0.0.0     # expose to the network
 ```
 
 See [docs/admin.md](admin.md) for the full interface specification.

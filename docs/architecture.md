@@ -5,12 +5,12 @@
 ## Package layout
 
 ```
-bench2/
+bench_cli/
 ├── bench.yml                    # user's config (not part of the package)
 │
 ├── setup.py                     # or pyproject.toml — installs the `bench` CLI entry point
 │
-└── bench2/                      # Python package
+└── bench_cli/                         # Python package
     ├── __init__.py
     ├── cli.py                   # Click entry point — wires commands to classes
     ├── platform.py              # OS detection and system package manager abstraction
@@ -113,7 +113,7 @@ bench2/
 
 ---
 
-## Config layer (`bench2/config/`)
+## Config layer (`bench_cli/config/`)
 
 Config classes are pure data holders. They are constructed by parsing `bench.yml` and expose no side effects. They are the only objects that know the shape of the YAML file.
 
@@ -205,7 +205,7 @@ class WorkerConfig:
 
 ---
 
-## Core layer (`bench2/core/`)
+## Core layer (`bench_cli/core/`)
 
 Core objects represent things that exist (or will exist) on disk. They receive the relevant config and the parent `Bench` object so they can resolve paths without knowing where the bench root is.
 
@@ -295,7 +295,7 @@ class Site:
 
 ---
 
-## Managers layer (`bench2/managers/`)
+## Managers layer (`bench_cli/managers/`)
 
 Managers handle interactions with system services and tools. They do not know about Sites or Apps directly — they receive only what they need.
 
@@ -552,7 +552,7 @@ class ProcessManagerFactory:
 
 ---
 
-## Commands layer (`bench2/commands/`)
+## Commands layer (`bench_cli/commands/`)
 
 Each command class receives a `Bench` object and a logger. It orchestrates managers and core objects in the correct order. Commands are the only layer that produces user-visible console output.
 
@@ -580,7 +580,7 @@ class UpdateCommand:
 
 ---
 
-## CLI entry point (`bench2/cli.py`)
+## CLI entry point (`bench_cli/cli.py`)
 
 Built with [Click](https://click.palletsprojects.com/). Responsibilities:
 1. Find `bench.yml` (current directory, then parent directories up to `$HOME`).
@@ -627,7 +627,7 @@ def setup_production(): ...      # SetupProductionCommand(bench).run()
 
 ---
 
-## Platform detection (`bench2/platform.py`)
+## Platform detection (`bench_cli/platform.py`)
 
 All OS-specific branching lives in one module. Every other module imports from here rather than calling `platform.system()` or `shutil.which()` inline.
 
@@ -686,10 +686,10 @@ Factory function — returns `BrewPackageManager()` on macOS, `AptPackageManager
 
 ## Error handling
 
-- All config errors raise `bench2.exceptions.ConfigError`.
-- All command errors raise `bench2.exceptions.BenchError`.
+- All config errors raise `bench_cli.exceptions.ConfigError`.
+- All command errors raise `bench_cli.exceptions.BenchError`.
 - The CLI catches these at the top level and prints a clean error message without a traceback (unless `--verbose` is passed).
-- Subprocess failures (git, pip, mysql) raise `bench2.exceptions.CommandError` with the captured stderr.
+- Subprocess failures (git, pip, mysql) raise `bench_cli.exceptions.CommandError` with the captured stderr.
 
 ---
 
@@ -704,7 +704,7 @@ Factory function — returns `BrewPackageManager()` on macOS, `AptPackageManager
 | `supervisor` | Daemon process manager (`SupervisorProcessManager`); also installs the `supervisord` and `supervisorctl` binaries |
 | `flask` | Admin web interface (`bench admin`) |
 
-All are pure Python and declared in `setup.py`. No system packages are required to install bench2 itself.
+All are pure Python and declared in `setup.py`. No system packages are required to install bench itself.
 
 `bench setup nginx` and `bench setup letsencrypt` additionally install the `nginx` and `certbot` system packages if not already present (via apt on Ubuntu, via Homebrew on macOS). These are managed by their respective managers, not declared as Python dependencies.
 

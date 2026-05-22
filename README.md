@@ -1,4 +1,4 @@
-# bench2
+# bench
 
 A command-line tool for setting up and managing [Frappe](https://frappeframework.com) environments. Configuration lives in a single `bench.yml` file. No Docker.
 
@@ -6,7 +6,7 @@ A command-line tool for setting up and managing [Frappe](https://frappeframework
 
 **Ubuntu 22.04 LTS** (other Debian-based distros are best-effort)
 - Python 3.10+
-- `sudo` access (needed during `bench2 init` to install system packages via apt)
+- `sudo` access (needed during `bench init` to install system packages via apt)
 
 **macOS** (development only)
 - Python 3.10+
@@ -15,10 +15,10 @@ A command-line tool for setting up and managing [Frappe](https://frappeframework
 ## Installation
 
 ```bash
-pip install bench2
+pip install frappe-cli
 ```
 
-`bench2 init` will install MariaDB, Redis, Node.js, and any other system dependencies itself.
+`bench init` will install MariaDB, Redis, Node.js, and any other system dependencies itself.
 
 ---
 
@@ -28,7 +28,7 @@ pip install bench2
 
 ```bash
 mkdir my-bench && cd my-bench
-bench2 new
+bench new
 ```
 
 This writes a starter `bench.yml`. Open it and fill in your apps, sites, and database credentials.
@@ -36,7 +36,7 @@ This writes a starter `bench.yml`. Open it and fill in your apps, sites, and dat
 **2. Run the setup:**
 
 ```bash
-bench2 init
+bench init
 ```
 
 This will:
@@ -50,7 +50,7 @@ This will:
 **3. Start everything:**
 
 ```bash
-bench2 start
+bench start
 ```
 
 All processes (web, workers, Redis) start in the foreground. Press `Ctrl-C` to stop.
@@ -58,7 +58,7 @@ All processes (web, workers, Redis) start in the foreground. Press `Ctrl-C` to s
 **4. Stop from another terminal:**
 
 ```bash
-bench2 stop
+bench stop
 ```
 
 **5. Open the app:**
@@ -109,7 +109,7 @@ workers:
   long: 1
 ```
 
-> **Note:** Database name and credentials are generated automatically by frappe's `new-site`. You don't configure them — they're written into `sites/<sitename>/site_config.json` after `bench2 init`.
+> **Note:** Database name and credentials are generated automatically by frappe's `new-site`. You don't configure them — they're written into `sites/<sitename>/site_config.json` after `bench init`.
 
 ---
 
@@ -117,18 +117,18 @@ workers:
 
 | Command | What it does |
 |---------|-------------|
-| `bench2 new` | Scaffold a starter `bench.yml` in the current directory |
-| `bench2 init` | Install system packages, clone apps, create sites, build assets, generate process config |
-| `bench2 start` | Start all processes (web, workers, Redis) in the foreground |
-| `bench2 stop` | Stop a running bench (works across terminal sessions via PID file) |
-| `bench2 build` | Rebuild JavaScript and CSS assets |
-| `bench2 update` | Pull latest app commits, reinstall packages, migrate all sites |
-| `bench2 start-admin` | Start the admin UI as a background daemon (default: `http://localhost:8002`) |
-| `bench2 stop-admin` | Stop the background admin UI |
-| `bench2 admin` | Start the admin UI in the foreground (dev use) |
-| `bench2 setup nginx` | Generate and install nginx config |
-| `bench2 setup letsencrypt` | Obtain SSL certificates |
-| `bench2 setup production` | Full production setup (nginx + supervisor + SSL) |
+| `bench new` | Scaffold a starter `bench.yml` in the current directory |
+| `bench init` | Install system packages, clone apps, create sites, build assets, generate process config |
+| `bench start` | Start all processes (web, workers, Redis) in the foreground |
+| `bench stop` | Stop a running bench (works across terminal sessions via PID file) |
+| `bench build` | Rebuild JavaScript and CSS assets |
+| `bench update` | Pull latest app commits, reinstall packages, migrate all sites |
+| `bench start-admin` | Start the admin UI as a background daemon (default: `http://localhost:8002`) |
+| `bench stop-admin` | Stop the background admin UI |
+| `bench admin` | Start the admin UI in the foreground (dev use) |
+| `bench setup nginx` | Generate and install nginx config |
+| `bench setup letsencrypt` | Obtain SSL certificates |
+| `bench setup production` | Full production setup (nginx + supervisor + SSL) |
 
 All commands read `bench.yml` from the current directory or the nearest parent directory that contains one.
 
@@ -170,10 +170,10 @@ letsencrypt:
   email: ops@example.com
 ```
 
-Then run `bench2 init` followed by:
+Then run `bench init` followed by:
 
 ```bash
-bench2 setup production
+bench setup production
 ```
 
 This installs nginx, obtains a Let's Encrypt certificate, and starts all processes under supervisor.
@@ -183,17 +183,17 @@ This installs nginx, obtains a Let's Encrypt certificate, and starts all process
 ## Web admin
 
 ```bash
-bench2 start-admin          # start on default port 8002 (background daemon)
-bench2 stop-admin           # stop the daemon
-bench2 start-admin --port 9000  # custom port
+bench start-admin          # start on default port 8002 (background daemon)
+bench stop-admin           # stop the daemon
+bench start-admin --port 9000  # custom port
 ```
 
-The admin starts as a background daemon and auto-stops after **15 minutes of inactivity** — so you don't accidentally leave it running. Use `bench2 stop-admin` to stop it immediately.
+The admin starts as a background daemon and auto-stops after **15 minutes of inactivity** — so you don't accidentally leave it running. Use `bench stop-admin` to stop it immediately.
 
 For interactive/foreground use during development:
 
 ```bash
-bench2 admin                # foreground, Ctrl-C to stop
+bench admin                # foreground, Ctrl-C to stop
 ```
 
 The admin interface provides:
@@ -211,7 +211,7 @@ The admin reads all state directly from the filesystem on each request — it ke
 
 ## Directory layout
 
-After `bench2 init`, your bench directory looks like this:
+After `bench init`, your bench directory looks like this:
 
 ```
 my-bench/

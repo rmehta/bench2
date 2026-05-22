@@ -1,6 +1,6 @@
-# bench2 — Specification
+# bench — Specification
 
-bench2 is a command-line tool for setting up and managing a Frappe development environment on Ubuntu and macOS. It replaces the original frappe/bench with a simpler, YAML-driven approach that avoids Docker and keeps everything transparent and hackable.
+bench is a command-line tool for setting up and managing a Frappe development environment on Ubuntu and macOS. It replaces the original frappe/bench with a simpler, YAML-driven approach that avoids Docker and keeps everything transparent and hackable.
 
 ---
 
@@ -17,7 +17,7 @@ bench2 is a command-line tool for setting up and managing a Frappe development e
 ## Quick start
 
 ```bash
-pip install bench2          # install the CLI
+pip install frappe-cli          # install the CLI
 
 mkdir my-bench && cd my-bench
 bench new                   # scaffold a starter bench.yml

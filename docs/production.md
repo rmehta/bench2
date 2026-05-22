@@ -150,7 +150,7 @@ This means:
 ### HTTP-only site (`ssl: false`)
 
 ```nginx
-# bench2 — site1.example.com
+# bench — site1.example.com
 
 upstream bench-<bench-name> {
     server 127.0.0.1:8000;
@@ -314,10 +314,10 @@ class BenchConfig:
     letsencrypt: LetsEncryptConfig = field(default_factory=LetsEncryptConfig)
 ```
 
-### New files in `bench2/config/`
+### New files in `bench_cli/config/`
 
 ```
-bench2/config/
+bench_cli/config/
 ├── ...
 ├── nginx_config.py          # NginxConfig
 └── letsencrypt_config.py    # LetsEncryptConfig
@@ -429,8 +429,8 @@ class SetupProductionCommand:
 ### Package layout additions
 
 ```
-bench2/
-└── bench2/
+bench_cli/
+└── bench_cli/
     ├── config/
     │   ├── ...
     │   ├── nginx_config.py

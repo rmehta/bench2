@@ -1,4 +1,4 @@
-"""Tests for bench2.tasks — TaskRunner and TaskReader."""
+"""Tests for bench_cli.tasks — TaskRunner and TaskReader."""
 from __future__ import annotations
 
 import json
@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from bench2.tasks.task_runner import TaskRunner, TASK_RETENTION_LIMIT
-from bench2.tasks.task_reader import TaskReader
-from bench2.exceptions import TaskNotFoundError, TaskNotRunningError
+from bench_cli.tasks.task_runner import TaskRunner, TASK_RETENTION_LIMIT
+from bench_cli.tasks.task_reader import TaskReader
+from bench_cli.exceptions import TaskNotFoundError, TaskNotRunningError
 
 
 # ── TaskRunner._generate_task_id ────────────────────────────────────────────
@@ -213,7 +213,7 @@ def test_task_retention_limit(tmp_path: Path) -> None:
     mock_proc = MagicMock()
     mock_proc.pid = 99999
 
-    with patch("bench2.tasks.task_runner.subprocess.Popen", return_value=mock_proc):
+    with patch("bench_cli.tasks.task_runner.subprocess.Popen", return_value=mock_proc):
         runner.run("build", {})
 
     # The oldest completed task directory should have been removed.
