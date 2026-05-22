@@ -30,5 +30,5 @@ class RunCommand:
         if not config_file.exists():
             raise BenchError(
                 f"Process manager config not found at {config_name}. "
-                "Run 'bench init' first to initialise the bench, then 'bench start'."
+                "Run 'bench2 init' first to initialise the bench, then 'bench2 start'."
             )

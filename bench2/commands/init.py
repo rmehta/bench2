@@ -62,7 +62,7 @@ class InitCommand:
         self._step(13, "Generate process manager config")
         ProcessManagerFactory.create(self.bench).generate_config()
 
-        click.echo("Bench initialised successfully. Run: bench start")
+        click.echo("Bench initialised successfully. Run: bench2 start")
 
     def _step(self, number: int, description: str) -> None:
         click.echo(f"[{number}/13] {description}...")

@@ -28,8 +28,8 @@ class SetupProductionCommand:
     def _require_linux(self) -> None:
         if not is_linux():
             print(
-                "Error: bench setup production only runs on Linux servers.\n"
-                "On macOS, use 'bench run' with honcho for local development.",
+                "Error: bench2 setup production only runs on Linux servers.\n"
+                "On macOS, use 'bench2 start' with honcho for local development.",
                 file=sys.stderr,
             )
             sys.exit(1)

@@ -50,4 +50,4 @@ class NewCommand:
             )
         bench_yml.write_text(_BENCH_YML_TEMPLATE)
         click.echo(f"Created bench.yml at {bench_yml}")
-        click.echo("Edit it to configure your bench, then run: bench init")
+        click.echo("Edit it to configure your bench, then run: bench2 init")
