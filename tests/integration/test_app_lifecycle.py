@@ -38,9 +38,9 @@ def _run(bench_bin: str, *args: str, cwd: Path) -> subprocess.CompletedProcess:
 
 
 def _installed_apps(bench_bin: str, bench_root: Path, site: str) -> list[str]:
-    """Return the list of apps installed on *site* (one name per line)."""
+    """Return app names installed on *site*. list-apps output is '<name> <version> <branch>'."""
     r = _run(bench_bin, "--site", site, "list-apps", cwd=bench_root)
-    return [line.strip() for line in r.stdout.splitlines() if line.strip()]
+    return [line.split()[0] for line in r.stdout.splitlines() if line.strip()]
 
 
 def _app_in_venv(bench_root: Path) -> bool:
