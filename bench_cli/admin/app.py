@@ -18,6 +18,7 @@ from bench_cli.exceptions import ConfigError
 def create_app(bench_root: Path) -> Flask:
     app = Flask(__name__, template_folder="templates")
     app.config["BENCH_ROOT"] = bench_root
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
 
     @app.before_request
     def _check_admin_enabled():

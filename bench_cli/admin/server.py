@@ -19,10 +19,18 @@ def main() -> None:
     args = parser.parse_args()
 
     from bench_cli.admin.app import create_app
+    from bench_cli.config.bench_config import BenchConfig
 
-    app = create_app(Path(args.bench_root))
+    bench_root = Path(args.bench_root)
+    app = create_app(bench_root)
 
-    if not args.no_timeout:
+    try:
+        cfg = BenchConfig.from_file(bench_root / "bench.yml")
+        admin_enabled = cfg.admin.enabled
+    except Exception:
+        admin_enabled = False
+
+    if not args.no_timeout and not admin_enabled:
         @app.before_request
         def _touch() -> None:
             global _last_request

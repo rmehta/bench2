@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Sites <span class="text-muted" style="font-weight:400;font-size:13px">({{ sites | length }})</span></h2>
+<div class="page-header">
+  <h2>Sites <span class="text-muted" style="font-weight:400;font-size:13px">({{ sites | length }})</span></h2>
+  <button class="btn-primary" id="open-create-site">+ Create Site</button>
+</div>
 
 <div class="card">
   <table>
@@ -29,5 +32,62 @@
     </tbody>
   </table>
 </div>
+
+<!-- Create Site modal -->
+<div class="modal" id="create-site-modal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Create Site</h3>
+      <button class="modal-close" data-modal-close aria-label="Close">&times;</button>
+    </div>
+    <form id="create-site-form" style="display:block">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="site-name">Site name</label>
+          <input type="text" id="site-name" placeholder="mysite.localhost" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" data-modal-close>Cancel</button>
+        <button type="submit" class="btn-primary" id="create-site-submit">Create Site</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const createSiteModal = new Modal('create-site-modal')
+
+  document.getElementById('open-create-site').addEventListener('click', () => createSiteModal.open())
+
+  document.getElementById('create-site-form').addEventListener('submit', async e => {
+    e.preventDefault()
+    const submit = document.getElementById('create-site-submit')
+    submit.disabled = true
+    submit.textContent = 'Creating…'
+
+    const name = document.getElementById('site-name').value.trim()
+
+    try {
+      const res  = await fetch('/sites/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        createSiteModal.close()
+        window.location.href = `/tasks/${data.task_id}`
+      } else {
+        Toast.show(data.error, 'error')
+      }
+    } catch {
+      Toast.show('Request failed. Is the server running?', 'error')
+    } finally {
+      submit.disabled = false
+      submit.textContent = 'Create Site'
+    }
+  })
+</script>
 
 {% endblock %}

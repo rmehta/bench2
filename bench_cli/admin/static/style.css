@@ -154,11 +154,8 @@ nav a:hover {
 }
 
 nav a.active {
-  background: var(--gray-900);
-  color: #fff;
+  background: var(--gray-200);
 }
-
-nav a.active:hover { color: #fff; }
 
 /* ── Typography ───────────────────────────────────────────────────────────── */
 h2 {

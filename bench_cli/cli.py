@@ -259,7 +259,7 @@ def admin(context: click.Context, port: int, host: str) -> None:
     from bench_cli.admin.app import create_app
     bench_root = find_bench_root()
     app = create_app(bench_root)
-    app.run(host=host, port=port, threaded=True)
+    app.run(host=host, port=port, threaded=True, debug=True)
 
 
 @cli.group()
