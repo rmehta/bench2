@@ -8,6 +8,9 @@ version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = []
 
+[project.scripts]
+bench = "bench_cli.cli:main"
+
 [project.optional-dependencies]
 admin = ["flask>=3.0"]
 test = ["pytest>=8.0"]
