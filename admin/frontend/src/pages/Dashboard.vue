@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Card, LoadingText, ErrorMessage, Progress, AxisChart } from 'frappe-ui'
+import { Card, LoadingText, ErrorMessage, Progress, AxisChart, Button } from 'frappe-ui'
 
 const router = useRouter()
 
@@ -53,6 +53,28 @@ const chartConfig = computed(() => ({
   ],
 }))
 
+const updateLoading = ref(false)
+const updateError = ref('')
+
+async function runUpdate() {
+  updateError.value = ''
+  updateLoading.value = true
+  try {
+    const res = await fetch('/api/tasks/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: 'update' }),
+    })
+    const d = await res.json()
+    if (d.ok) router.push(`/tasks/${d.task_id}`)
+    else updateError.value = d.error
+  } catch (e) {
+    updateError.value = e.message
+  } finally {
+    updateLoading.value = false
+  }
+}
+
 let dashTimer, statsTimer
 
 onMounted(() => {
@@ -73,6 +95,14 @@ onUnmounted(() => {
     <ErrorMessage v-else-if="error" :message="error" />
 
     <template v-else-if="data">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-medium text-ink-gray-7">{{ data.summary?.name ?? 'Bench' }}</h2>
+        <div class="flex items-center gap-2">
+          <ErrorMessage :message="updateError" />
+          <Button variant="outline" :loading="updateLoading" @click="runUpdate">Update Bench</Button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <button class="text-left" @click="router.push('/apps')">
           <Card :title="`${data.cloned_count} / ${data.apps.length}`" subtitle="Apps cloned" />
