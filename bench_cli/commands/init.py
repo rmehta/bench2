@@ -12,7 +12,7 @@ class InitCommand:
 
     def run(self) -> None:
         production = self.bench.config.nginx.enabled
-        total = 11 if production else 9
+        total = 12 if production else 9
 
         self._step(1, total, "Validate bench.toml")
         self.bench.config.validate()
@@ -48,22 +48,21 @@ class InitCommand:
         self._step(8, total, "Configure Redis")
         RedisManager(self.bench.config.redis, self.bench).generate_configs()
 
-        self._step(9, total, "Generate Procfile")
+        self._step(9, total, "Generate process config")
         self._write_common_config_for_production(production)
         ProcessManagerFactory.create(self.bench).generate_config()
 
         if production:
-            self._step(10, total, "Setup nginx")
+            self._step(10, total, "Setup supervisor")
+            self._setup_supervisor()
+            self._step(11, total, "Setup nginx")
             self._setup_nginx()
-            self._step(11, total, "Setup Let's Encrypt SSL")
+            self._step(12, total, "Setup Let's Encrypt SSL")
             self._setup_letsencrypt()
 
         print("\nBench initialised. Next steps:")
         print("  bench new-site site1.example.com   # create your first site")
-        if production:
-            print("  bench start                        # start all processes")
-        else:
-            print("  bench start                        # start all processes")
+        print("  bench start                        # start all processes")
 
     def _step(self, number: int, total: int, description: str) -> None:
         print(f"[{number}/{total}] {description}...", flush=True)
@@ -93,6 +92,14 @@ class InitCommand:
                 pass
         existing["dns_multitenant"] = 1
         common_config_path.write_text(json.dumps(existing, indent=2))
+
+    def _setup_supervisor(self) -> None:
+        from bench_cli.platform import get_package_manager
+        get_package_manager().install("supervisor")
+        from bench_cli.managers.supervisor_process_manager import SupervisorProcessManager
+        mgr = SupervisorProcessManager(self.bench)
+        mgr.install_config()
+        mgr.reload()
 
     def _setup_nginx(self) -> None:
         from bench_cli.commands.setup.nginx import SetupNginxCommand

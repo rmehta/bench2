@@ -243,4 +243,7 @@ class ProcessManager:
 class ProcessManagerFactory:
     @staticmethod
     def create(bench: "Bench") -> ProcessManager:
+        if bench.config.nginx.enabled:
+            from bench_cli.managers.supervisor_process_manager import SupervisorProcessManager
+            return SupervisorProcessManager(bench)
         return ProcessManager(bench)

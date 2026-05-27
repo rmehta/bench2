@@ -18,7 +18,7 @@ class SetupProductionCommand:
         self.bench.config.validate()
         self._require_linux()
         self._write_dns_multitenancy()
-        self._generate_procfile()
+        self._setup_supervisor()
         self._setup_nginx()
         self._setup_letsencrypt_if_needed()
         self._print_summary()
@@ -40,9 +40,14 @@ class SetupProductionCommand:
         existing_data["dns_multitenant"] = 1
         common_config_path.write_text(json.dumps(existing_data, indent=2))
 
-    def _generate_procfile(self) -> None:
-        from bench_cli.managers.process_manager import ProcessManagerFactory
-        ProcessManagerFactory.create(self.bench).generate_config()
+    def _setup_supervisor(self) -> None:
+        from bench_cli.platform import get_package_manager
+        get_package_manager().install("supervisor")
+        from bench_cli.managers.supervisor_process_manager import SupervisorProcessManager
+        mgr = SupervisorProcessManager(self.bench)
+        mgr.generate_config()
+        mgr.install_config()
+        mgr.reload()
 
     def _setup_nginx(self) -> None:
         from bench_cli.commands.setup.nginx import SetupNginxCommand
