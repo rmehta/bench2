@@ -30,10 +30,10 @@ default = 2
 short = 1
 long = 1
 
-[[workers.custom]]
-queue = "backup"
-count = 2
-timeout = 3600
+# [[workers.custom]]
+# queue = "backup"
+# count = 2
+# timeout = 3600
 
 [admin]
 port = 8002

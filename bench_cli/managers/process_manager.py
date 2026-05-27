@@ -56,7 +56,6 @@ class ProcessManager:
     # ── Lifecycle ───────────────────────────────────────────────────────────
 
     def start(self) -> None:
-        self.generate_config()
         self.pid_file.write_text(str(os.getpid()))
         try:
             self._run_procfile()
