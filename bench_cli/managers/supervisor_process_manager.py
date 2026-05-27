@@ -73,18 +73,42 @@ class SupervisorProcessManager(ProcessManager):
         return group + "".join(blocks)
 
     def _render_program(self, pd: ProcessDefinition, safe_name: str) -> str:
+        import re
         log_dir = self.bench.logs_path
-        return (
-            f"[program:{self.bench.config.name}-{safe_name}]\n"
-            f"command={pd.command}\n"
-            f"autostart=true\n"
-            f"autorestart=true\n"
-            f"stdout_logfile={log_dir}/{pd.name}.log\n"
-            f"stderr_logfile={log_dir}/{pd.name}.error.log\n"
-            f"user=root\n"
-            f"stopasgroup=true\n"
-            f"killasgroup=true\n\n"
-        )
+        cmd = pd.command
+
+        # Extract leading VAR=value env assignments
+        env_vars: list[str] = []
+        while True:
+            m = re.match(r'^([A-Z_][A-Z0-9_]*)=(\S+)\s+', cmd)
+            if not m:
+                break
+            env_vars.append(f'{m.group(1)}="{m.group(2)}"')
+            cmd = cmd[m.end():]
+
+        # Extract leading `cd /dir && ` working-directory prefix
+        directory = ""
+        m2 = re.match(r'^cd\s+(\S+)\s*&&\s*', cmd)
+        if m2:
+            directory = m2.group(1)
+            cmd = cmd[m2.end():]
+
+        lines = [
+            f"[program:{self.bench.config.name}-{safe_name}]",
+            f"command={cmd}",
+            "autostart=true",
+            "autorestart=true",
+            f"stdout_logfile={log_dir}/{pd.name}.log",
+            f"stderr_logfile={log_dir}/{pd.name}.error.log",
+            "user=root",
+            "stopasgroup=true",
+            "killasgroup=true",
+        ]
+        if directory:
+            lines.insert(2, f"directory={directory}")
+        if env_vars:
+            lines.insert(2, f"environment={','.join(env_vars)}")
+        return "\n".join(lines) + "\n\n"
 
     def _prod_process_definitions(self) -> list[ProcessDefinition]:
         """Process definitions for production (no dev processes)."""
