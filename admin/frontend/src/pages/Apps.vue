@@ -3,7 +3,7 @@ import { h, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Button, Badge, Dialog, ListView, FormControl,
-  LoadingText, ErrorMessage, TextInput, MultiSelect, Select,
+  LoadingText, ErrorMessage, TextInput, Select,
 } from 'frappe-ui'
 
 const router = useRouter()
@@ -96,13 +96,6 @@ const rows = computed(() =>
   }))
 )
 
-// Options for MultiSelect — branches as {label, value}
-const pickerBranchOptions = computed(() =>
-  pickerBranches.value.map(b => ({ label: b, value: b }))
-)
-const manualBranchOptions = computed(() =>
-  manualBranches.value.map(b => ({ label: b, value: b }))
-)
 const activeBranchOptions = computed(() =>
   pickerBranches.value.map(b => ({ label: b, value: b }))
 )
@@ -183,20 +176,6 @@ function onManualBranchKeydown(e) {
   }
 }
 
-// MultiSelect v-model syncs branches list; keep activeBranch valid
-function onPickerBranchesChange(val) {
-  pickerBranches.value = val
-  if (!val.includes(pickerActiveBranch.value)) {
-    pickerActiveBranch.value = val[0] || ''
-  }
-}
-
-function onManualBranchesChange(val) {
-  manualBranches.value = val
-  if (!val.includes(manualActiveBranch.value)) {
-    manualActiveBranch.value = val[0] || ''
-  }
-}
 
 function openSwitch(app, branch) {
   switchApp.value = app
@@ -306,40 +285,24 @@ onMounted(() => { load(); loadRegistry() })
 
           <!-- Branch configuration for selected app -->
           <div v-if="selectedApp" class="border-t border-outline-gray-1 pt-3 flex flex-col gap-3">
-            <div class="flex gap-4">
-              <!-- Active branch -->
-              <div class="flex-1">
-                <Select
-                  label="Active Branch"
-                  :options="activeBranchOptions"
-                  v-model="pickerActiveBranch"
-                  placeholder="Select active branch"
-                />
-              </div>
-              <!-- Available branches (MultiSelect) -->
-              <div class="flex-1">
-                <p class="mb-1.5 text-xs text-ink-gray-5">Available Branches</p>
-                <MultiSelect
-                  :options="pickerBranchOptions"
-                  :modelValue="pickerBranches"
-                  placeholder="Branches…"
-                  @update:modelValue="onPickerBranchesChange"
-                />
-              </div>
-            </div>
-            <!-- Add a custom branch not in the registry -->
-            <div class="flex gap-2 items-end">
-              <div class="flex-1">
+            <div>
+              <p class="mb-1.5 text-xs text-ink-gray-5">Custom Branch</p>
+              <div class="flex gap-2">
                 <TextInput
+                  class="flex-1"
                   v-model="pickerBranchInput"
-                  placeholder="Add custom branch…"
+                  placeholder="e.g. version-14, develop"
                   @keydown="onPickerBranchKeydown"
                 />
+                <Button variant="subtle" @click="addPickerBranch" :disabled="!pickerBranchInput.trim()">Add</Button>
               </div>
-              <Button variant="subtle" @click="addPickerBranch" :disabled="!pickerBranchInput.trim()">
-                Add
-              </Button>
             </div>
+            <Select
+              label="Active Branch"
+              :options="activeBranchOptions"
+              v-model="pickerActiveBranch"
+              placeholder="Select active branch"
+            />
           </div>
 
           <ErrorMessage :message="addError" class="mt-2" />
@@ -364,41 +327,25 @@ onMounted(() => { load(); loadRegistry() })
           <div class="flex flex-col gap-3">
             <FormControl label="Name" type="text" v-model="manualName" placeholder="my_app" />
             <FormControl label="Repository URL" type="text" v-model="manualRepo" placeholder="https://github.com/org/repo" />
-
-            <!-- Branch tag input -->
-            <div class="flex gap-2 items-end">
-              <div class="flex-1">
+            <div>
+              <p class="mb-1.5 text-xs text-ink-gray-5">Add Branch</p>
+              <div class="flex gap-2">
                 <TextInput
+                  class="flex-1"
                   v-model="manualBranchInput"
-                  placeholder="Add branch (e.g. main, develop)…"
+                  placeholder="e.g. main, develop"
                   @keydown="onManualBranchKeydown"
                 />
-              </div>
-              <Button variant="subtle" @click="addManualBranch" :disabled="!manualBranchInput.trim()">
-                Add
-              </Button>
-            </div>
-
-            <!-- Branch tags + active selector -->
-            <div v-if="manualBranches.length" class="flex gap-4">
-              <div class="flex-1">
-                <p class="mb-1.5 text-xs text-ink-gray-5">Available Branches</p>
-                <MultiSelect
-                  :options="manualBranchOptions"
-                  :modelValue="manualBranches"
-                  placeholder="Branches…"
-                  @update:modelValue="onManualBranchesChange"
-                />
-              </div>
-              <div class="flex-1">
-                <Select
-                  label="Active Branch"
-                  :options="manualActiveBranchOptions"
-                  v-model="manualActiveBranch"
-                  placeholder="Select active branch"
-                />
+                <Button variant="subtle" @click="addManualBranch" :disabled="!manualBranchInput.trim()">Add</Button>
               </div>
             </div>
+            <Select
+              v-if="manualBranches.length"
+              label="Active Branch"
+              :options="manualActiveBranchOptions"
+              v-model="manualActiveBranch"
+              placeholder="Select active branch"
+            />
           </div>
 
           <ErrorMessage :message="addError" class="mt-2" />
