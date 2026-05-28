@@ -14,6 +14,13 @@ fi
 
 chmod +x "$BENCH_CLI_DIR/bench"
 
+# Install uv if not present
+if ! command -v uv &>/dev/null; then
+    echo "Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
 # Add to PATH in the appropriate shell rc file
 add_to_path() {
     local rc="$1"
