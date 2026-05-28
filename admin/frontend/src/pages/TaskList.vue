@@ -1,25 +1,35 @@
 <script setup>
 import { h, ref, computed, onMounted } from 'vue'
-import { Badge, ListView, TabButtons, LoadingText, ErrorMessage } from 'frappe-ui'
+import { ListView, TabButtons, LoadingText, ErrorMessage } from 'frappe-ui'
+import StatusBadge from '../components/StatusBadge.vue'
 
 const tasks = ref([])
 const loading = ref(true)
 const error = ref('')
 const statusFilter = ref('all')
 
-const TASK_COLOR = { success: 'green', failed: 'red', running: 'blue', killed: 'gray' }
-
 const filterButtons = ['all', 'running', 'success', 'failed', 'killed'].map(s => ({
   label: s.charAt(0).toUpperCase() + s.slice(1),
   value: s,
 }))
+
+const TASK_STATUS_BADGE = {
+  running: 'badge-running',
+  success: 'badge-success',
+  failed:  'badge-error',
+  stopped: 'badge-error',
+  killed:  'badge-neutral',
+}
 
 const columns = [
   { label: 'Command', key: 'command', width: '140px' },
   { label: 'Context', key: '_args' },
   {
     label: 'Status', key: 'status', width: '90px',
-    prefix: ({ row }) => h(Badge, { label: row.status, theme: TASK_COLOR[row.status] || 'gray' }),
+    prefix: ({ row }) => h(StatusBadge, {
+      label: row.status,
+      variant: TASK_STATUS_BADGE[row.status] || 'badge-neutral',
+    }),
     getLabel: () => '',
   },
   { label: 'Started', key: '_started', width: '150px' },
