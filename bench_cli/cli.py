@@ -322,11 +322,6 @@ def _dispatch_setup(args: argparse.Namespace) -> None:
         from bench_cli.commands.setup.production import SetupProductionCommand
 
         SetupProductionCommand(_load_bench()).run()
-    elif setup_cmd == "volume":
-        from bench_cli.commands.volume import VolumeSetupCommand
-
-        VolumeSetupCommand(_load_bench().config.volume).run()
-
     else:
         print("Usage: bench setup [config|nginx|letsencrypt|production]", file=sys.stderr)
         sys.exit(1)
