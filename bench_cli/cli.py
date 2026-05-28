@@ -1,13 +1,16 @@
 import argparse
 import sys
+import typing
 from pathlib import Path
 
 from bench_cli.exceptions import BenchError
 
-_OWN_COMMANDS = frozenset([
-    "new", "init", "start", "stop", "get-app", "new-site",
-    "frappe", "build", "update", "build-admin", "setup",
-])
+if typing.TYPE_CHECKING:
+    from bench_cli.core.bench import Bench
+
+_OWN_COMMANDS = frozenset(
+    ["new", "init", "start", "stop", "get-app", "new-site", "frappe", "build", "update", "build-admin", "setup", "volume"],
+)
 _OWN_GROUP_OPTIONS = frozenset(["--verbose", "--yes", "-y", "--bench", "-b", "--help", "-h"])
 
 # Global bench name selected via -b / --bench; set in main() before dispatch.
@@ -16,6 +19,7 @@ _active_bench: str | None = None
 
 def _cli_root() -> Path:
     import bench_cli as _pkg
+
     return Path(_pkg.__file__).parent.parent
 
 
@@ -33,27 +37,18 @@ def find_bench_root() -> Path:
     if _active_bench:
         bench_dir = benches_dir / _active_bench
         if not (bench_dir / "bench.toml").exists():
-            candidates = (
-                [d.name for d in benches_dir.iterdir() if d.is_dir() and (d / "bench.toml").exists()]
-                if benches_dir.is_dir() else []
-            )
+            candidates = [d.name for d in benches_dir.iterdir() if d.is_dir() and (d / "bench.toml").exists()] if benches_dir.is_dir() else []
             hint = f"  Available: {', '.join(candidates)}" if candidates else "  No benches found. Run: bench new <name>"
             raise BenchError(f"Bench '{_active_bench}' not found.\n{hint}")
         return bench_dir
 
     if benches_dir.is_dir():
-        candidates = [
-            d for d in benches_dir.iterdir()
-            if d.is_dir() and (d / "bench.toml").exists()
-        ]
+        candidates = [d for d in benches_dir.iterdir() if d.is_dir() and (d / "bench.toml").exists()]
         if len(candidates) == 1:
             return candidates[0]
         if len(candidates) > 1:
             names = ", ".join(d.name for d in sorted(candidates))
-            raise BenchError(
-                f"Multiple benches found: {names}\n"
-                "Specify one with: bench -b <name> <command>"
-            )
+            raise BenchError(f"Multiple benches found: {names}\nSpecify one with: bench -b <name> <command>")
 
     current = Path.cwd()
     for directory in [current, *current.parents]:
@@ -119,8 +114,7 @@ def _make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bench", description="Frappe bench manager")
     parser.add_argument("--verbose", action="store_true", help="Show full tracebacks on error.")
     parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts.")
-    parser.add_argument("--bench", "-b", metavar="NAME", default=None,
-                        help="Bench to operate on (name inside benches/).")
+    parser.add_argument("--bench", "-b", metavar="NAME", default=None, help="Bench to operate on (name inside benches/).")
 
     sub = parser.add_subparsers(dest="command")
 
@@ -152,6 +146,21 @@ def _make_parser() -> argparse.ArgumentParser:
     setup_sub.add_parser("nginx", help="Generate nginx config.")
     setup_sub.add_parser("letsencrypt", help="Setup Let's Encrypt SSL.")
     setup_sub.add_parser("production", help="Full production setup (nginx + supervisor).")
+    setup_sub.add_parser("volume", help="Full production setup (nginx + supervisor).")
+
+    p_volume = sub.add_parser("volume", help="ZFS volume management commands.")
+    volume_sub = p_volume.add_subparsers(dest="volume_command")
+    volume_sub.add_parser("status", help="Show pool and dataset status.")
+
+    p_snap = volume_sub.add_parser("snapshot", help="Create a snapshot.")
+    p_snap.add_argument("--dataset", choices=["benches", "mariadb"], default=None, help="Dataset to snapshot (default: both).")
+
+    p_list = volume_sub.add_parser("list-snapshots", help="List snapshots.")
+    p_list.add_argument("--dataset", choices=["benches", "mariadb"], default=None, help="Dataset to list (default: both).")
+
+    p_destroy = volume_sub.add_parser("destroy-snapshot", help="Destroy a snapshot.")
+    p_destroy.add_argument("tag", help="Snapshot tag to destroy (e.g. 20250528-140000).")
+    p_destroy.add_argument("--dataset", choices=["benches", "mariadb"], default="benches", help="Dataset the snapshot belongs to.")
 
     return parser
 
@@ -168,6 +177,7 @@ def main() -> None:
         _active_bench = bench_name
         try:
             from bench_cli.commands.frappe_cmd import FrappeCommand
+
             FrappeCommand(_load_bench()).run_raw(["frappe", *clean])
         except BenchError as e:
             print(str(e), file=sys.stderr)
@@ -182,6 +192,7 @@ def main() -> None:
         verbose = "--verbose" in args_list
         try:
             from bench_cli.commands.frappe_cmd import FrappeCommand
+
             FrappeCommand(_load_bench()).run(tuple(remaining[1:]))
         except BenchError as e:
             print(str(e), file=sys.stderr)
@@ -219,18 +230,22 @@ def _dispatch(args: argparse.Namespace) -> None:
 
     if cmd == "new":
         from bench_cli.commands.new import NewCommand
+
         NewCommand(_cli_root() / "benches" / args.name, args.name).run()
 
     elif cmd == "init":
         from bench_cli.commands.init import InitCommand
+
         InitCommand(_load_bench()).run()
 
     elif cmd == "start":
         from bench_cli.commands.start import RunCommand
+
         RunCommand(_load_bench()).run()
 
     elif cmd == "stop":
         from bench_cli.commands.stop import StopCommand
+
         StopCommand(_load_bench()).run()
 
     elif cmd == "get-app":
@@ -241,22 +256,29 @@ def _dispatch(args: argparse.Namespace) -> None:
 
     elif cmd == "frappe":
         from bench_cli.commands.frappe_cmd import FrappeCommand
+
         FrappeCommand(_load_bench()).run(tuple(args.args))
 
     elif cmd == "build":
         from bench_cli.commands.build import BuildCommand
+
         BuildCommand(_load_bench()).run()
 
     elif cmd == "update":
         from bench_cli.commands.update import UpdateCommand
+
         UpdateCommand(_load_bench(), skip_confirm=args.yes).run()
 
     elif cmd == "build-admin":
         from bench_cli.commands.admin import BuildAdminCommand
+
         BuildAdminCommand().run()
 
     elif cmd == "setup":
         _dispatch_setup(args)
+
+    elif cmd == "volume":
+        _dispatch_volume(args)
 
     else:
         _make_parser().print_help()
@@ -286,16 +308,49 @@ def _dispatch_setup(args: argparse.Namespace) -> None:
 
     if setup_cmd == "config":
         from bench_cli.commands.setup_config import UpdateConfigCommand
+
         UpdateConfigCommand(_load_bench()).run()
     elif setup_cmd == "nginx":
         from bench_cli.commands.setup.nginx import SetupNginxCommand
+
         SetupNginxCommand(_load_bench()).run()
     elif setup_cmd == "letsencrypt":
         from bench_cli.commands.setup.letsencrypt import SetupLetsEncryptCommand
+
         SetupLetsEncryptCommand(_load_bench()).run()
     elif setup_cmd == "production":
         from bench_cli.commands.setup.production import SetupProductionCommand
+
         SetupProductionCommand(_load_bench()).run()
+    elif setup_cmd == "volume":
+        from bench_cli.commands.volume import VolumeSetupCommand
+
+        VolumeSetupCommand(_load_bench().config.volume).run()
+
     else:
         print("Usage: bench setup [config|nginx|letsencrypt|production]", file=sys.stderr)
+        sys.exit(1)
+
+
+def _dispatch_volume(args: argparse.Namespace) -> None:
+    from bench_cli.commands.volume import (
+        VolumeDestroySnapshotCommand,
+        VolumeListSnapshotsCommand,
+        VolumeSnapshotCommand,
+        VolumeStatusCommand,
+    )
+
+    config = _load_bench().config.volume
+    volume_cmd = getattr(args, "volume_command", None)
+
+    if volume_cmd == "status":
+        VolumeStatusCommand(config).run()
+    elif volume_cmd == "snapshot":
+        VolumeSnapshotCommand(config, args.dataset).run()
+    elif volume_cmd == "list-snapshots":
+        VolumeListSnapshotsCommand(config, args.dataset).run()
+    elif volume_cmd == "destroy-snapshot":
+        VolumeDestroySnapshotCommand(config, args.tag, args.dataset, args.yes).run()
+    else:
+        print("Usage: bench volume [setup|status|snapshot|list-snapshots|destroy-snapshot]", file=sys.stderr)
         sys.exit(1)
