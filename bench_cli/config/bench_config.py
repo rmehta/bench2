@@ -10,12 +10,14 @@ from bench_cli.config.letsencrypt_config import LetsEncryptConfig
 from bench_cli.config.mariadb_config import MariaDBConfig
 from bench_cli.config.nginx_config import NginxConfig
 from bench_cli.config.redis_config import RedisConfig
+from bench_cli.config.volume_config import BenchesDatasetConfig, MariaDBDatasetConfig, SnapshotConfig, VolumeConfig
 from bench_cli.config.worker_config import CustomWorkerEntry, WorkerConfig
 from bench_cli.exceptions import ConfigError
 
 _BENCH_NAME_PATTERN = re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]*$")
 _EMAIL_PATTERN = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 _VERSION_PATTERN = re.compile(r"^\d+(\.\d+)*$")
+_ZFS_SIZE_PATTERN = re.compile(r"^\d+(\.\d+)?[KMGTkmgt]?$")
 _REDIS_PORT_MIN = 1024
 _REDIS_PORT_MAX = 65535
 
@@ -33,6 +35,7 @@ class BenchConfig:
     nginx: NginxConfig = field(default_factory=NginxConfig)
     letsencrypt: LetsEncryptConfig = field(default_factory=LetsEncryptConfig)
     admin: AdminConfig = field(default_factory=AdminConfig)
+    volume: VolumeConfig = field(default_factory=VolumeConfig)
 
     @classmethod
     def from_file(cls, path: Path) -> "BenchConfig":
@@ -60,6 +63,7 @@ class BenchConfig:
         nginx = cls._parse_nginx(data.get("nginx", {}))
         letsencrypt = cls._parse_letsencrypt(data.get("letsencrypt", {}))
         admin = cls._parse_admin(data.get("admin", {}))
+        volume = cls._parse_volume(data.get("volume", {}))
         return cls(
             name=bench_data.get("name", ""),
             python_version=bench_data.get("python", ""),
@@ -72,6 +76,7 @@ class BenchConfig:
             nginx=nginx,
             letsencrypt=letsencrypt,
             admin=admin,
+            volume=volume,
         )
 
     @staticmethod
@@ -136,6 +141,30 @@ class BenchConfig:
             enabled=data.get("enabled", False),
         )
 
+    @staticmethod
+    def _parse_volume(data: dict) -> VolumeConfig:
+        benches_data = data.get("benches", {})
+        mariadb_data = data.get("mariadb", {})
+        snapshots_data = data.get("snapshots", {})
+        return VolumeConfig(
+            enabled=data.get("enabled", False),
+            pool=data.get("pool", ""),
+            device=data.get("device", ""),
+            benches=BenchesDatasetConfig(
+                reservation=benches_data.get("reservation", "10G"),
+                quota=benches_data.get("quota", "50G"),
+                data_dir=benches_data.get("data_dir", "/home/frappe/bench"),
+            ),
+            mariadb=MariaDBDatasetConfig(
+                reservation=mariadb_data.get("reservation", "5G"),
+                quota=mariadb_data.get("quota", "20G"),
+                data_dir=mariadb_data.get("data_dir", "/var/lib/mysql"),
+            ),
+            snapshots=SnapshotConfig(
+                enabled=snapshots_data.get("enabled", False),
+            ),
+        )
+
     def validate(self) -> None:
         self._validate_required_fields()
         self._validate_bench_name()
@@ -146,6 +175,7 @@ class BenchConfig:
         self._validate_nginx_ports_distinct()
         self._validate_mariadb_version()
         self._validate_redis_version()
+        self._validate_volume()
 
     def _validate_required_fields(self) -> None:
         if not self.name:
@@ -154,20 +184,13 @@ class BenchConfig:
             raise ConfigError("bench.python is required and must not be empty.")
         for app in self.apps:
             if not app.name or not app.repo or not app.branch:
-                raise ConfigError(
-                    f"App '{app.name or '(unnamed)'}' must have name, repo, and branch."
-                )
+                raise ConfigError(f"App '{app.name or '(unnamed)'}' must have name, repo, and branch.")
             if app.branches and app.branch not in app.branches:
-                raise ConfigError(
-                    f"App '{app.name}': active branch '{app.branch}' is not listed in branches {app.branches}."
-                )
+                raise ConfigError(f"App '{app.name}': active branch '{app.branch}' is not listed in branches {app.branches}.")
 
     def _validate_bench_name(self) -> None:
         if not _BENCH_NAME_PATTERN.match(self.name):
-            raise ConfigError(
-                f"bench.name '{self.name}' is invalid. "
-                "Must start with a letter and contain only letters, digits, underscores, or hyphens."
-            )
+            raise ConfigError(f"bench.name '{self.name}' is invalid. Must start with a letter and contain only letters, digits, underscores, or hyphens.")
 
     def _validate_app_names_unique(self) -> None:
         names = [app.name for app in self.apps]
@@ -182,9 +205,7 @@ class BenchConfig:
         port_names = ["redis.cache_port", "redis.queue_port", "redis.socketio_port"]
         for name, port in zip(port_names, ports):
             if not (_REDIS_PORT_MIN <= port <= _REDIS_PORT_MAX):
-                raise ConfigError(
-                    f"{name} {port} is out of range. Must be between {_REDIS_PORT_MIN} and {_REDIS_PORT_MAX}."
-                )
+                raise ConfigError(f"{name} {port} is out of range. Must be between {_REDIS_PORT_MIN} and {_REDIS_PORT_MAX}.")
 
     def _validate_worker_counts(self) -> None:
         counts = {
@@ -201,30 +222,38 @@ class BenchConfig:
 
     def _validate_letsencrypt_email(self) -> None:
         if self.letsencrypt.email and not _EMAIL_PATTERN.match(self.letsencrypt.email):
-            raise ConfigError(
-                f"letsencrypt.email '{self.letsencrypt.email}' is not a valid email address."
-            )
+            raise ConfigError(f"letsencrypt.email '{self.letsencrypt.email}' is not a valid email address.")
 
     def _validate_nginx_ports_distinct(self) -> None:
         if self.nginx.http_port == self.nginx.https_port:
-            raise ConfigError(
-                f"nginx.http_port and nginx.https_port must be distinct, "
-                f"but both are set to {self.nginx.http_port}."
-            )
+            raise ConfigError(f"nginx.http_port and nginx.https_port must be distinct, but both are set to {self.nginx.http_port}.")
 
     def _validate_mariadb_version(self) -> None:
         if self.mariadb.version and not _VERSION_PATTERN.match(self.mariadb.version):
-            raise ConfigError(
-                f"mariadb.version '{self.mariadb.version}' is invalid. "
-                "Must be a version string like '10.6' or '11.4'."
-            )
+            raise ConfigError(f"mariadb.version '{self.mariadb.version}' is invalid. Must be a version string like '10.6' or '11.4'.")
 
     def _validate_redis_version(self) -> None:
         if self.redis.version and not _VERSION_PATTERN.match(self.redis.version):
-            raise ConfigError(
-                f"redis.version '{self.redis.version}' is invalid. "
-                "Must be a version string like '7' or '7.0'."
-            )
+            raise ConfigError(f"redis.version '{self.redis.version}' is invalid. Must be a version string like '7' or '7.0'.")
+
+    def _validate_volume(self) -> None:
+        if not self.volume.enabled:
+            return
+        if not self.volume.pool:
+            raise ConfigError("volume.pool is required when volume.enabled = true.")
+        if not self.volume.device:
+            raise ConfigError("volume.device is required when volume.enabled = true.")
+        self._validate_zfs_size("volume.benches.reservation", self.volume.benches.reservation)
+        self._validate_zfs_size("volume.benches.quota", self.volume.benches.quota)
+        self._validate_zfs_size("volume.mariadb.reservation", self.volume.mariadb.reservation)
+        self._validate_zfs_size("volume.mariadb.quota", self.volume.mariadb.quota)
+        if not Path(self.volume.mariadb.data_dir).is_absolute():
+            raise ConfigError(f"volume.mariadb.data_dir '{self.volume.mariadb.data_dir}' must be an absolute path.")
+
+    @staticmethod
+    def _validate_zfs_size(field_name: str, value: str) -> None:
+        if not _ZFS_SIZE_PATTERN.match(value):
+            raise ConfigError(f"{field_name} '{value}' is not a valid ZFS size. Examples: '10G', '512M', '1T'.")
 
     @property
     def framework_app(self) -> AppConfig:
