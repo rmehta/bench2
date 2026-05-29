@@ -39,6 +39,27 @@ long = 1
 port = 8002
 enabled = false
 timeout = 180
+
+# ── Volume (ZFS, optional) ────────────────────────────────────────────────
+# Uncomment and configure to use ZFS-based volume management.
+# Requires Linux and the zfsutils-linux package.
+#
+# [volume]
+# enabled = false
+# pool = "bench-pool"       # ZFS pool name (created on first bench init)
+# device = "/dev/sdb"       # block device to use for the pool
+#
+# [volume.benches]
+# reservation = "10G"       # guaranteed space for bench directories
+# quota = "50G"             # hard cap on bench directory space
+#
+# [volume.mariadb]
+# reservation = "5G"        # guaranteed space for MariaDB data files
+# quota = "20G"             # hard cap on MariaDB data space
+# data_dir = "/var/lib/mysql"
+#
+# [volume.snapshots]
+# enabled = false           # set to true to enable bench volume snapshot
 """
 
 
@@ -50,10 +71,7 @@ class NewCommand:
     def run(self) -> None:
         bench_toml = self.target_directory / "bench.toml"
         if bench_toml.exists():
-            raise BenchError(
-                f"A bench named '{self.name}' already exists at {self.target_directory}. "
-                "Choose a different name or remove the existing bench."
-            )
+            raise BenchError(f"A bench named '{self.name}' already exists at {self.target_directory}. Choose a different name or remove the existing bench.")
 
         benches_dir = self.target_directory.parent
         if not benches_dir.exists():
@@ -67,7 +85,7 @@ class NewCommand:
         bench_toml.write_text(_BENCH_TOML_TEMPLATE.format(name=self.name))
 
         print(f"\nBench '{self.name}' created at {self.target_directory}")
-        print(f"\nNext steps:")
+        print("\nNext steps:")
         print(f"  1. Edit the config:  {bench_toml}")
-        print(f"  2. Run:              bench init")
-        print(f"  3. Create a site:    bench new-site site1.localhost")
+        print("  2. Run:              bench init")
+        print("  3. Create a site:    bench new-site site1.localhost")

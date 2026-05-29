@@ -49,7 +49,7 @@ class PythonEnvManager:
     def install_node(self) -> None:
         if shutil.which("node"):
             if not shutil.which("yarn"):
-                run_command(["npm", "install", "-g", "yarn"])
+                run_command(["sudo", "npm", "install", "-g", "yarn"])
             return
         if is_macos():
             run_command(["brew", "install", "node"])
