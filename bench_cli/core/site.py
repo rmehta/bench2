@@ -48,6 +48,9 @@ class Site:
             cmd += ["--db-host", mariadb.host, "--db-port", str(mariadb.port)]
             if mariadb.root_password:
                 cmd += ["--db-root-password", mariadb.root_password]
+            # Use '%' host scope for TCP connections to allow connections from any host.
+            # MySQL treats 'localhost' (unix socket) and '127.0.0.1' (TCP) as different hosts.
+            cmd += ["--mariadb-user-host-login-scope", "%"]
 
         run_command(cmd, cwd=self.bench.sites_path, stream_output=True)
 

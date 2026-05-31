@@ -1,6 +1,9 @@
 # Benches (created by `bench new`)
 benches/
 
+# Research
+research-folder/
+
 # Python
 __pycache__/
 *.py[cod]
