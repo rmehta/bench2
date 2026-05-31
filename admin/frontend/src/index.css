@@ -6,3 +6,16 @@ html {
 .dialog-overlay {
   z-index: 50;
 }
+
+/* Reusable pulsing dot — indicates live / in-progress state */
+.pulse-dot {
+  @apply relative inline-flex h-2 w-2;
+}
+.pulse-dot::before {
+  content: '';
+  @apply absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75;
+}
+.pulse-dot::after {
+  content: '';
+  @apply relative inline-flex h-2 w-2 rounded-full bg-blue-500;
+}

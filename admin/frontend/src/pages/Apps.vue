@@ -5,6 +5,7 @@ import {
   Button, Badge, Dialog, ListView, FormControl,
   LoadingText, ErrorMessage, TextInput, Select,
 } from 'frappe-ui'
+import StatusBadge from '../components/StatusBadge.vue'
 
 const router = useRouter()
 const apps = ref([])
@@ -81,7 +82,7 @@ const columns = computed(() => [
   },
   {
     label: 'Status', key: '_status', width: '90px',
-    prefix: ({ row }) => h(Badge, { label: row._status, theme: row._status === 'dirty' ? 'orange' : 'gray' }),
+    prefix: ({ row }) => h(StatusBadge, { label: row._status, variant: row._status === 'dirty' ? 'badge-warning' : 'badge-neutral' }),
     getLabel: () => '',
   },
   { label: 'Version', key: 'installed_version', width: '90px' },

@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Button, Badge, Dialog, LoadingText, ErrorMessage } from 'frappe-ui'
+import { Button, Dialog, LoadingText, ErrorMessage } from 'frappe-ui'
 import TerminalOutput from '../components/TerminalOutput.vue'
 import { processLine } from '../utils/ansi.js'
+import StatusBadge from '../components/StatusBadge.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,7 +21,13 @@ const actionError = ref('')
 let es = null
 const terminal = ref(null)
 
-const TASK_COLOR = { success: 'green', failed: 'red', running: 'blue', killed: 'gray' }
+const TASK_STATUS_BADGE = {
+  running: 'badge-running',
+  success: 'badge-success',
+  failed:  'badge-error',
+  stopped: 'badge-error',
+  killed:  'badge-neutral',
+}
 
 function fmtDate(iso) {
   if (!iso) return '—'
@@ -114,9 +121,9 @@ onUnmounted(() => { if (es) { es.close(); es = null } })
 
       <!-- Header -->
       <div class="flex flex-wrap items-center gap-3">
-        <Badge
+        <StatusBadge
           :label="streaming ? 'running…' : task.status"
-          :theme="TASK_COLOR[task.status] || 'gray'"
+          :variant="streaming ? 'badge-running' : (TASK_STATUS_BADGE[task.status] || 'badge-neutral')"
         />
         <span class="font-mono text-sm font-medium">{{ task.command }}</span>
         <span
