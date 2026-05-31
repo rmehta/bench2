@@ -52,7 +52,7 @@ class Site:
         run_command(cmd, cwd=self.bench.sites_path, stream_output=True)
 
     def restore(self, db_file: str, public_files: str | None = None, private_files: str | None = None) -> None:
-        cmd = [self._bench_binary(), "frappe", "--site", self.config.name, "restore", db_file]
+        cmd = self._fc("frappe", "--site", self.config.name, "restore", db_file)
         if public_files:
             cmd += ["--with-public-files", public_files]
         if private_files:
